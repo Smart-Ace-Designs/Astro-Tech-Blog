@@ -1,0 +1,51 @@
+---
+import { formatDate } from "@/utils";
+import type { CollectionEntry } from "astro:content";
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+
+const { article } = Astro.props;
+
+interface Props {
+  article: CollectionEntry<"blog">;
+}
+
+const imagePath = `/src/images/articles/${article.data.image}`;
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/images/articles/*.{jpeg,jpg,png,gif}",
+);
+
+if (!images[imagePath])
+  throw new Error(
+    `"${imagePath}" does not exist in glob: "/src/images/articles/*.{jpeg,jpg,png,gif}"`,
+  );
+---
+
+<div class="relative inline-block w-full cursor-pointer rounded-2xl sm:w-auto">
+  <a href={"/articles/" + article.id}>
+    <Image
+      src={images[imagePath]()}
+      alt="Most Recent Article"
+      loading={"eager"}
+      class="h-auto w-full rounded-2xl"
+    />
+
+    <div
+      class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-black text-center text-white opacity-80 transition duration-300 ease-in-out hover:opacity-75"
+    >
+      <div>
+        <h2 class="text-2xl font-semibold sm:text-3xl">{article.data.title}</h2>
+        <p class="mt-4 text-xl">{formatDate(article.data.pubDate)}</p>
+
+        <!-- Tags with rounded border -->
+        <div class="mt-4 flex justify-center">
+          {
+            article.data.tags.map((tag: string) => (
+              <span class="mr-2 rounded-full border px-2 py-1 text-xs text-white">{tag}</span>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
